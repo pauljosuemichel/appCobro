@@ -1,16 +1,15 @@
 from datetime import datetime
 from . import db
-
 from flask_login import UserMixin
 
 class Usuario(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    is_admin = db.Column(db.Boolean, nullable=False, default=False)
+    is_admin = db.Column(db.Boolean, default=False)
 
     numero_tarjeta = db.Column(db.Integer)
-    vencimiento_tarjeta = db.Column(db.DataTime)
+    vencimiento_tarjeta = db.Column(db.DateTime)
     numero_seguridad_tarjeta = db.Column(db.Integer)
 
     def __repr__(self):
@@ -18,24 +17,16 @@ class Usuario(UserMixin, db.Model):
 
 class Carrito(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    usuario = db.Column(db.Integer, db.ForeignKey('usuario.id'))
-    fecha = db.Column(db.DataTime, nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
+    fecha = db.Column(db.DateTime, nullable=False)
+
+    usuario = db.relationship('Usuario', backref=db.backref('carritos', lazy=True))
+    productos = db.relationship('Producto', secondary='carrito_producto', backref=db.backref('carritos', lazy=True))
 
     def __repr__(self):
-        return f"<Carrito {self.email}>"
+        return f"<Carrito {self.id}>"
 
-class Compra(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    fecha = db.Column(db.DataTime, nullable=False)
-    carrito = db.Column(db.Integer, db.ForeignKey('carrito.id'))
-
-    cantidad = db.Column(db.Integer, default=1)
-    producto = db.Column(db.Integer, db.ForeignKey('producto.id'))
-
-    def __repr__(self):
-        return f"<Carrito {self.email}>"
-
-class Producto(UserMixin, db.Model):
+class Producto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
     precio = db.Column(db.Integer, nullable=False)
@@ -46,3 +37,13 @@ class Producto(UserMixin, db.Model):
 
     def __repr__(self):
         return f"<Producto {self.nombre}>"
+
+# Tabla de asociación para la relación muchos a muchos entre Carrito y Producto
+class CarritoProducto(db.Model):
+    __tablename__ = 'carrito_producto'
+    carrito_id = db.Column(db.Integer, db.ForeignKey('carrito.id'), primary_key=True)
+    producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), primary_key=True)
+    cantidad = db.Column(db.Integer, default=1)
+
+    carrito = db.relationship('Carrito', backref=db.backref('carrito_productos', lazy=True))
+    producto = db.relationship('Producto', backref=db.backref('carrito_productos', lazy=True))

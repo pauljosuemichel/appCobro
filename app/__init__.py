@@ -26,7 +26,9 @@ def create_app(test_config=None):
     migrate = Migrate(app, db)
 
     """Blueprints"""
-    from routes import admin as admin_blueprint
+    from app.routes.main import main_bp
+    from app.routes.admin import admin as admin_blueprint
+    app.register_blueprint(main_bp)
     app.register_blueprint(admin_blueprint)
     
 
@@ -36,6 +38,6 @@ def create_app(test_config=None):
     login_manager.login_message_category = "danger"
     @login_manager.user_loader
     def load_user(user_id):
-        return Usuario.query.get(int(user_id)) #.filter(Usuario.id == int(user_id)).first()
+        return Usuario.query.get(int(user_id))
     
     return app
