@@ -12,6 +12,8 @@ class Usuario(UserMixin, db.Model):
     vencimiento_tarjeta = db.Column(db.DateTime)
     numero_seguridad_tarjeta = db.Column(db.Integer)
 
+    carritos = db.relationship('Carrito', back_populates='usuario')
+
     def __repr__(self):
         return f"<Usuario {self.name}>"
 
@@ -20,8 +22,9 @@ class Carrito(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     fecha = db.Column(db.DateTime, nullable=False)
 
-    usuario = db.relationship('Usuario', backref=db.backref('carritos', lazy=True))
-    productos = db.relationship('Producto', secondary='carrito_producto', backref=db.backref('carritos', lazy=True))
+    usuario = db.relationship('Usuario', back_populates='carritos')
+    carrito_productos = db.relationship('CarritoProducto', back_populates='carrito')
+    productos = db.relationship('Producto', secondary='carrito_producto', back_populates='carritos', overlaps="carrito_productos")
 
     def __repr__(self):
         return f"<Carrito {self.id}>"
@@ -35,6 +38,9 @@ class Producto(db.Model):
     proveedor = db.Column(db.String(100), nullable=False)
     stock = db.Column(db.Integer, nullable=False)
 
+    carrito_productos = db.relationship('CarritoProducto', back_populates='producto')
+    carritos = db.relationship('Carrito', secondary='carrito_producto', back_populates='productos', overlaps="carrito_productos")
+
     def __repr__(self):
         return f"<Producto {self.nombre}>"
 
@@ -45,5 +51,5 @@ class CarritoProducto(db.Model):
     producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), primary_key=True)
     cantidad = db.Column(db.Integer, default=1)
 
-    carrito = db.relationship('Carrito', backref=db.backref('carrito_productos', lazy=True))
-    producto = db.relationship('Producto', backref=db.backref('carrito_productos', lazy=True))
+    carrito = db.relationship('Carrito', back_populates='carrito_productos', overlaps="productos,carritos")
+    producto = db.relationship('Producto', back_populates='carrito_productos', overlaps="carritos,productos")

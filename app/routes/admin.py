@@ -1,36 +1,11 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user, current_user
+from app import bcrypt, db
+from app.models import Usuario, Carrito
+from app.forms import LoginForm, RegisterForm
 
-from models import Usuario
+admin_bp = Blueprint('admin', __name__, url_prefix='/pages')
 
-admin = Blueprint('admin', __name__, url_prefix='/admin', template_folder='templates')
-
-@admin.route('/')
-@login_required
-def home():
-    return render_template('admin/home.html')
-
-
-@admin.route('/login', methods=["GET", "POST"])
-def login():
-    if current_user.is_authenticated:
-        flash("You are already logged in.", "info")
-        return redirect(url_for("admin.home"))
-    form = LoginForm(request.form)
-    if form.validate_on_submit():
-        user = Usuario.query.filter_by(email=form.email.data).first()
-        if user and bcrypt.check_password_hash(user.password, request.form["password"]):
-            cache.clear() # Mejor seria solo borrar la cache del usuario
-            login_user(user)
-            return redirect(url_for("admin.home"))
-        else:
-            flash("Invalid email and/or password.", "danger")
-            return render_template("admin/login.html", form=form)
-    return render_template("admin/login.html", form=form)
-
-
-@admin.route('/logout')
-def logout():
-    logout_user()
-    flash("You were logged out.", "success")
-    return redirect(url_for("admin.login"))
+@admin_bp.route('/')
+def panel():
+    return render_template('base.html')

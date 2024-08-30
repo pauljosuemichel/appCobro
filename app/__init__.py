@@ -8,26 +8,23 @@ db = SQLAlchemy()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
 
-def create_app(test_config=None):
-    """Create and configure an instance of the Flask application."""
-    app = Flask(__name__, instance_relative_config=True)
+def create_app():
+    app = Flask(__name__)
 
-
-    #Basic test route
-    @app.route("/hello")
-    def hello():
-        return 'HEllo'
+    app.config['SECRET_KEY'] = 'your_secret_key'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://uxfgd9irlopbqktk:U14V1O97n3nyjyHjrNPV@bufynsvxpltldv46gzcr-mysql.services.clever-cloud.com:3306/bufynsvxpltldv46gzcr'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['DEBUG'] = True
     
-
-    """Initialize"""
-    login_manager.init_app(app)
-    bcrypt.init_app(app)
     db.init_app(app)
     migrate = Migrate(app, db)
+    login_manager.init_app(app)
+    bcrypt.init_app(app)
+
 
     """Blueprints"""
     from app.routes.main import main_bp
-    from app.routes.admin import admin as admin_blueprint
+    from app.routes.admin import admin_bp as admin_blueprint
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_blueprint)
     
