@@ -47,3 +47,33 @@ def register():
         flash("Your account has been created! You are now able to log in.", "success")
         return redirect(url_for("main.login"))
     return render_template("admin/register.html", form=form)
+
+
+@main_bp.route('/carrito')
+@login_required
+def carrito():
+    carritos = Carrito.query.filter(Carrito.usuario.has(id=current_user.id)).all()
+    return render_template("carrito.html", carritos=carritos)
+
+@main_bp.route('/agregarCarrito/<id>', methods=['POST'])
+@login_required
+def agregarCarrito(id):
+    
+    return render_template("carrito.html")
+
+@main_bp.route('/comprar/<id>')
+@login_required
+def compra(id):
+    #Mucho codigo ...
+    return render_template("carrito.html", carritos=carritos)
+
+@main_bp.route('/contacto')
+def contacto():
+    #Mucho codigo ...
+    return render_template("contacto.html")
+
+# @auth.route('/logout', methods=['POST'])
+# def logout():
+#     logout_user()  # Función para cerrar la sesión del usuario actual
+#     flash('Has cerrado sesión correctamente.', 'success')
+#     return redirect(url_for('main.home'))

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block content %}
+<body>
+    <header>
+        <h1>Tienda en P&M Línea</h1>
+    </header>
+
+    <div class="container">
+        <h2>Ponte en Contacto con Nosotros</h2>
+        <p>Si tienes alguna pregunta o comentario, por favor completa el siguiente formulario.</p>
+
+        <form action="" method="POST">
+            <div class="form-group">
+                <label for="name">Nombre:</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Correo Electrónico:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Mensaje:</label>
+                <textarea id="message" name="message" rows="5" required></textarea>
+            </div>
+
+            <button type="submit">Enviar Mensaje</button>
+        </form>
+    </div>
+
+</body>
+{% endblock %}
+
+{% block css %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f8f8;
+    }
+
+    header {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+    }
+
+    .container {
+        padding: 20px;
+        margin: 0 auto;
+        max-width: 600px;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+
+    button {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-size: 1em;
+        border-radius: 4px;
+        width: 100%;
+    }
+
+    button:hover {
+        background-color: #218838;
+    }
+</style>
+{% endblock %}

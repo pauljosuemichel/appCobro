@@ -12,18 +12,25 @@ class Usuario(UserMixin, db.Model):
     vencimiento_tarjeta = db.Column(db.DateTime)
     numero_seguridad_tarjeta = db.Column(db.Integer)
 
-    carritos = db.relationship('Carrito', back_populates='usuario')
+    carritos = db.relationship('Carrito', backref='usuario', lazy='dynamic')
 
     def __repr__(self):
         return f"<Usuario {self.name}>"
+
+# Tabla de asociacion para la relacion muchos a muchos entre Carrito y Producto
+class CarritoProducto(db.Model):
+    __tablename__ = 'carrito_producto'
+    carrito_id = db.Column(db.Integer, db.ForeignKey('carrito.id'), primary_key=True)
+    producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), primary_key=True)
+    cantidad = db.Column(db.Integer, default=1)
+
 
 class Carrito(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'))
     fecha = db.Column(db.DateTime, nullable=False)
+    comprado = db.Column(db.Boolean, default=False)
 
-    usuario = db.relationship('Usuario', back_populates='carritos')
-    carrito_productos = db.relationship('CarritoProducto', back_populates='carrito')
     productos = db.relationship('Producto', secondary='carrito_producto', back_populates='carritos', overlaps="carrito_productos")
 
     def __repr__(self):
@@ -38,18 +45,9 @@ class Producto(db.Model):
     proveedor = db.Column(db.String(100), nullable=False)
     stock = db.Column(db.Integer, nullable=False)
 
-    carrito_productos = db.relationship('CarritoProducto', back_populates='producto')
     carritos = db.relationship('Carrito', secondary='carrito_producto', back_populates='productos', overlaps="carrito_productos")
 
     def __repr__(self):
         return f"<Producto {self.nombre}>"
 
-# Tabla de asociación para la relación muchos a muchos entre Carrito y Producto
-class CarritoProducto(db.Model):
-    __tablename__ = 'carrito_producto'
-    carrito_id = db.Column(db.Integer, db.ForeignKey('carrito.id'), primary_key=True)
-    producto_id = db.Column(db.Integer, db.ForeignKey('producto.id'), primary_key=True)
-    cantidad = db.Column(db.Integer, default=1)
 
-    carrito = db.relationship('Carrito', back_populates='carrito_productos', overlaps="productos,carritos")
-    producto = db.relationship('Producto', back_populates='carrito_productos', overlaps="carritos,productos")

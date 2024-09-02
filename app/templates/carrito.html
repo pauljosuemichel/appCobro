@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+<body>
+
+    <div class="container">
+        <h2>Tu Carrito</h2>
+
+        <table class="cart-table">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Cantidad</th>
+                    <th>Total</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Tienda P&M en Línea. Todos los derechos reservados.</p>
+    </footer>
+
+</body>
+{% endblock %}
+
+{% block css %}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f8f8;
+    }
+
+    header {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+    }
+
+    .container {
+        padding: 20px;
+        margin: 0 auto;
+        max-width: 800px;
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .cart-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+
+    .cart-table th,
+    .cart-table td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: center;
+    }
+
+    .cart-table th {
+        background-color: #f2f2f2;
+    }
+
+    .cart-total {
+        text-align: right;
+    }
+
+    .checkout-btn {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        text-decoration: none;
+        font-size: 1em;
+        cursor: pointer;
+        display: inline-block;
+    }
+
+    .checkout-btn:hover {
+        background-color: #218838;
+    }
+
+    .remove-btn {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+
+    .remove-btn:hover {
+        background-color: #c82333;
+    }
+
+    footer {
+        background-color: #333;
+        color: white;
+        text-align: center;
+        padding: 10px 0;
+        position: fixed;
+        width: 100%;
+        bottom: 0;
+    }
+</style>
+{% endblock %}
