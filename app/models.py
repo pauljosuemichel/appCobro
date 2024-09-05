@@ -40,10 +40,11 @@ class Producto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
     precio = db.Column(db.Integer, nullable=False)
-    descuento = db.Column(db.Float, default=0.0)
-
-    proveedor = db.Column(db.String(100), nullable=False)
     stock = db.Column(db.Integer, nullable=False)
+    imagen = db.Column(db.String(120), nullable=False)
+
+    descuento = db.Column(db.Float, default=0.0)
+    proveedor = db.Column(db.String(100))
 
     carritos = db.relationship('Carrito', secondary='carrito_producto', back_populates='productos', overlaps="carrito_productos")
 

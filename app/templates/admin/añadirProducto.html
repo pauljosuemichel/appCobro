@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="text-center">Añadir un producto</h1>
+<div class="border rounded p-3">
+    <form method="POST" action="{{ url_for('admin.crearProducto') }}" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div class="mb-2">
+            {{ form.nombre.label(class="form-label") }}
+            {{ form.nombre(class="form-control") }}
+            {% for error in form.nombre.errors %}
+                <span style="color: red;">[{{ error }}]</span>
+            {% endfor %}
+        </div>
+
+        <hr>
+
+        <div class="row mb-2">
+            <div class="col">
+                {{ form.precio.label(class="form-label") }}
+                {{ form.precio(class="form-control") }}
+                {% for error in form.precio.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </div>
+            
+            <div class="col">
+                {{ form.stock.label(class="form-label") }}
+                {{ form.stock(class="form-control") }}
+                {% for error in form.stock.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            {{ form.imagen.label(class="form-label") }}
+            {{ form.imagen(class="form-control") }}
+            {% for error in form.imagen.errors %}
+              <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        {{ form.submit(class="btn btn-warning m-auto") }}
+
+    </form>
+</div>
+<h2 class="mt-5 text-center">Eliminar productos</h2>
+<div class="d-flex justify-content-center">
+    {% for nombre in nombre_productos %}
+    <div class="border rounded p-1 ps-2 producto m-2">
+        <a href="" class="btn btn-outline-danger btn-sm me-2">
+            <i class="fas fa-trash"></i>
+        </a>
+        <p class="me-2">{{ nombre }}</p>
+    </div>
+    {% else %}
+        <h3>No products found.</h3>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block css %}
+<style>
+    .producto{
+        display: flex;
+        align-items: baseline;
+        background-color: rgb(222, 232, 238);
+        height: 40px;
+    }
+</style>
+{% endblock %}

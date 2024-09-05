@@ -7,6 +7,24 @@
     </header>
 
     <div class="container">
+        <div class="row">   
+            {% for producto in productos %}
+              <div class="col-md-4">
+                <div class="card mb-4">
+                  <!-- Mostrar la imagen del producto -->
+                    <img src="{{ url_for('static', filename='uploads/' ~ producto.imagen) }}" class="card-img-top" alt="{{ producto.nombre }}">
+                    <div class="card-body">
+                    <h5 class="card-title">{{ producto.nombre }}</h5>
+                    <p class="card-text"><strong>Precio:</strong> ${{ producto.precio }}</p>
+                    <p class="card-text"><strong>Stock:</strong> {{ producto.stock }}</p>
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <p>No products found.</p>
+            {% endfor %}
+        </div>
+
         <div class="product">
             <img src="{{ url_for('static', filename='img/producto1.jpg') }}" alt="Producto 1">
             <h3>Iphone 12</h3>

@@ -1,14 +1,15 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user, current_user
 from app import bcrypt, db
-from app.models import Usuario, Carrito
+from app.models import Usuario, Carrito, Producto
 from app.forms import LoginForm, RegisterForm
 
 main_bp = Blueprint('main', __name__, template_folder='templates')
 
 @main_bp.route('/')
 def home():
-    return render_template('home.html')
+    productos = Producto.query.all()
+    return render_template('home.html', productos=productos)
 
 @main_bp.route('/login', methods=["GET", "POST"])
 def login():
