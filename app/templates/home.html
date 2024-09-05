@@ -7,17 +7,26 @@
     </header>
 
     <div class="container">
-        <div class="row">   
+        <div class="row">
             {% for producto in productos %}
               <div class="col-md-4">
-                <div class="card mb-4">
+                <div class="card mb-4 shadow carta-producto">
                   <!-- Mostrar la imagen del producto -->
                     <img src="{{ url_for('static', filename='uploads/' ~ producto.imagen) }}" class="card-img-top" alt="{{ producto.nombre }}">
                     <div class="card-body">
-                    <h5 class="card-title">{{ producto.nombre }}</h5>
-                    <p class="card-text"><strong>Precio:</strong> ${{ producto.precio }}</p>
-                    <p class="card-text"><strong>Stock:</strong> {{ producto.stock }}</p>
-                  </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <h5 class="card-title text-start">{{ producto.nombre }}</h5>
+                            <h4 class="card-text text-end">${{ producto.precio | price_format }} <i class="fs-6 text">ARS</i></h4>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-end">
+                            <p class="card-text mb-0"><strong>Stock:</strong> {{ producto.stock }}</p>
+                            <form class="agregarCarritoForm" data-route="{{ url_for('main.agregarCarrito', product_id=producto.id) }}">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fa-solid fa-cart-shopping"></i> Agregar al Carrito
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
               </div>
             {% else %}
@@ -54,8 +63,39 @@
 </body>
 {% endblock %}
 
+{% block js %}
+<script>
+    document.querySelectorAll('.agregarCarritoForm').forEach(form => {
+        form.addEventListener('submit', function(event) {
+          event.preventDefault(); // Evita el envío tradicional del formulario
+  
+          fetch(this.getAttribute('data-route'), {method: 'POST'})
+          .then(response => response.json())
+          .then(data => {
+            if (data.status === 'success') {
+              alert(data.message);
+              // Aquí puedes actualizar la interfaz de usuario si es necesario
+            } else {
+              alert('Error al añadir el producto al carrito.');
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+          });
+        });
+      });
+</script>
+{% endblock %}
+
 {% block css %}
 <style>
+    .carta-producto{
+        transition: transform 0.3s ease;
+    }
+    .carta-producto:hover{
+        transform: scale(1.02);
+    }
+
     /* General Styles */
     body {
         font-family: Arial, sans-serif;

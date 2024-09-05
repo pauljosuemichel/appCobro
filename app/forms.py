@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import PasswordField, StringField, SubmitField, DecimalField, IntegerField, FileField
+from wtforms import PasswordField, StringField, SubmitField, IntegerField, FileField
 from wtforms.validators import DataRequired, Length, EqualTo, NumberRange
 from flask_wtf.file import FileAllowed, FileRequired
 
@@ -15,7 +15,7 @@ class RegisterForm(FlaskForm):
 
 class ProductoForm(FlaskForm):
     nombre = StringField('Nombre', validators=[DataRequired()])
-    precio = DecimalField('Precio', validators=[DataRequired(), NumberRange(min=0)])
+    precio = IntegerField('Precio', validators=[DataRequired(), NumberRange(min=0)])
     stock = IntegerField('Stock', validators=[DataRequired(), NumberRange(min=1)])
     imagen = FileField('Imagen', validators=[FileRequired(), FileAllowed(['jpg', 'png'], 'Images only!')])
     submit = SubmitField('Añadir Producto')

@@ -12,6 +12,7 @@ login_manager = LoginManager()
 def create_app():
     app = Flask(__name__)
 
+    """Configuracion"""
     app.config['SECRET_KEY'] = 'your_secret_key'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://uxfgd9irlopbqktk:U14V1O97n3nyjyHjrNPV@bufynsvxpltldv46gzcr-mysql.services.clever-cloud.com:3306/bufynsvxpltldv46gzcr'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -19,6 +20,7 @@ def create_app():
     app.config['UPLOAD_FOLDER'] = 'static/uploads/'  # Directorio donde se guardarán las imágenes
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Tamaño máximo del archivo (16 MB en este caso)
     
+    """Inicializacion"""
     db.init_app(app)
     migrate = Migrate(app, db)
     login_manager.init_app(app)
@@ -39,6 +41,17 @@ def create_app():
     def load_user(user_id):
         return Usuario.query.get(int(user_id))
 
+
+    """Formatos de Jinja2 personalizados"""
+    @app.template_filter('price_format')
+    def price_format(value):
+        try:
+            return '{:,.0f}'.format(int(value)).replace(',', '.')
+        except (ValueError, TypeError):
+            return value 
+
+
+
     @app.cli.command("create_user")
     @click.argument("name")
     @click.argument("password")
@@ -52,9 +65,23 @@ def create_app():
     @app.cli.command("remove_user")
     @click.argument("name")
     def create_user(name):
-        user = Usuario.query.filter_by(name).first()
+        user = Usuario.query.filter_by(name=name).first()
         db.session.delete(user)
         db.session.commit
         click.echo(f"User {name} removed successfully")
+
+    @app.cli.command("make_admin")
+    @click.argument("name")
+    def make_admin(name):
+        user = Usuario.query.filter_by(name=name).first()
+        user.is_admin = True
+        db.session.commit()
+        click.echo(f"User {name} is admin now")
+
+    @app.cli.command("list_users")
+    def list_users():
+        users = Usuario.query.all()
+        for user in users:
+            click.echo(f"{user}: {"admin" if user.is_admin else "guest"}")
     
     return app

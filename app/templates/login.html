@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-<main class="form-signin w-100 m-auto">
-  <form role="form" method="post" action="">
+<main class="mt-5 border rounded shadow p-4">
+  <form role="form" method="post">
     {{ form.csrf_token }}
     <h1 class="h3 mb-3 fw-normal text-center">Please sign in</h1>
 
     <div class="form-floating">
-      {{ form.name(placeholder="nombre", class="form-control mb-2") }}
+      {{ form.name(placeholder="nombre", class="form-control mb-2", size="40") }}
       {{ form.name.label }}
         {% if form.name.errors %}
           {% for error in form.name.errors %}

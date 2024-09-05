@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1 class="text-center">Añadir un producto</h1>
+<h1 class="text-center mt-4">Añadir un producto</h1>
 <div class="border rounded p-3">
     <form method="POST" action="{{ url_for('admin.crearProducto') }}" enctype="multipart/form-data">
         {{ form.hidden_tag() }}

@@ -1,22 +1,28 @@
 import os
-from flask import Blueprint, flash, redirect, render_template, request, url_for
-from flask_login import login_required, login_user, logout_user, current_user
+from flask import Blueprint, flash, redirect, render_template, url_for, abort
+from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
-from app import bcrypt, db
-from app.models import Usuario, Carrito, Producto
-from app.forms import LoginForm, RegisterForm, ProductoForm
+from functools import wraps
+
+from app import db
+from app.models import Producto
+from app.forms import ProductoForm
 
 admin_bp = Blueprint('admin', __name__)
 
-@admin_bp.route('/')
-def panel():
-    return render_template('base.html')
+#Decorador personalizado para rutas con privilegios de administrador
+def admin_required(func):
+    @wraps(func)
+    def decorated_view(*args, **kwargs):
+        if not current_user.is_admin:
+            abort(403)  # Error 403 Forbidden si el usuario no es administrador
+        return func(*args, **kwargs)
+    return decorated_view
 
-@admin_bp.route('/registrarUsuario')
-def register():
-    return render_template('base.html')
 
 @admin_bp.route('/crearProducto', methods=['GET', 'POST'])
+@login_required
+@admin_required
 def crearProducto():
     nombre_productos = Producto.query.with_entities(Producto.nombre).all()
     nombre_productos = [name for (name,) in nombre_productos]
@@ -42,6 +48,8 @@ def crearProducto():
     return render_template('admin/añadirProducto.html', form=form, nombre_productos=nombre_productos)
 
 @admin_bp.route('/eliminarProducto/<id>', methods=['POST'])
+@login_required
+@admin_required
 def eliminarProducto(id):
     producto = Producto.query.get_or_404(id)
     db.session.delete(producto)
