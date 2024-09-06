@@ -1,20 +1,26 @@
 from flask import Flask
+from flask_dance.contrib.google import make_google_blueprint
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from dotenv import load_dotenv
+import os
 import click
+
+load_dotenv()
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
 login_manager = LoginManager()
 
+
 def create_app():
     app = Flask(__name__)
 
     """Configuracion"""
-    app.config['SECRET_KEY'] = 'your_secret_key'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://uxfgd9irlopbqktk:U14V1O97n3nyjyHjrNPV@bufynsvxpltldv46gzcr-mysql.services.clever-cloud.com:3306/bufynsvxpltldv46gzcr'
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['DEBUG'] = True
     app.config['UPLOAD_FOLDER'] = 'static/uploads/'  # Directorio donde se guardarán las imágenes
@@ -26,16 +32,25 @@ def create_app():
     login_manager.init_app(app)
     bcrypt.init_app(app)
 
-
     """Blueprints"""
     from app.routes.main import main_bp
     from app.routes.admin import admin_bp as admin_blueprint
+    from app.routes.login import login_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_blueprint)
+    app.register_blueprint(login_bp)
+
+    # Crear el blueprint de Google OAuth
+    google_bp = make_google_blueprint(
+        client_id=os.getenv('GOOGLE_CLIENT_ID'),
+        client_secret=os.getenv('GOOGLE_CLIENT_SECRET'),
+        redirect_to='login.google_login'
+    )
+    app.register_blueprint(google_bp, url_prefix='/auth')
     
     """Obtener usuario actual para cada solicitud"""
     from app.models import Usuario
-    login_manager.login_view = "main.login"
+    login_manager.login_view = "login.login"
     login_manager.login_message_category = "danger"
     @login_manager.user_loader
     def load_user(user_id):

@@ -1,5 +1,5 @@
 @echo off
 call .venv/Scripts/activate.bat
 
-flask db migrate -m "Ruta de imagen, en los productos"
+flask db migrate -m "Campo email a usuarios"
 flask db upgrade

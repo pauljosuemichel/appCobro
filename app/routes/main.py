@@ -13,44 +13,6 @@ def home():
     productos = Producto.query.all()
     return render_template('home.html', productos=productos)
 
-@main_bp.route('/login', methods=["GET", "POST"])
-def login():
-    if current_user.is_authenticated:
-        flash("You are already logged in.", "info")
-        return redirect(url_for("main.home"))
-    form = LoginForm(request.form)
-    if form.validate_on_submit():
-        user = Usuario.query.filter_by(name=form.name.data).first()
-        if user and bcrypt.check_password_hash(user.password, request.form["password"]):
-            login_user(user)
-            return redirect(url_for("main.home"))
-        else:
-            flash("Invalid email and/or password.", "danger")
-            print("----Error en el logueo------")
-            return render_template("login.html", form=form)
-    return render_template("login.html", form=form)
-
-@main_bp.route('/logout')
-def logout():
-    logout_user()
-    flash("You were logged out.", "success")
-    return redirect(url_for("main.home"))
-
-@main_bp.route('/register', methods=["GET", "POST"])
-def register():
-    if current_user.is_authenticated:
-        flash("You are already logged in.", "info")
-        return redirect(url_for("main.home"))
-    form = RegisterForm(request.form)
-    if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        user = Usuario(name=form.name.data, password=hashed_password)
-        db.session.add(user)
-        db.session.commit()
-        flash("Your account has been created! You are now able to log in.", "success")
-        return redirect(url_for("main.login"))
-    return render_template("admin/register.html", form=form)
-
 
 @main_bp.route('/carrito')
 @login_required
