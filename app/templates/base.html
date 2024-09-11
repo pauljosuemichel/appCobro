@@ -69,8 +69,20 @@
         <a href="{{ url_for('login.login') }}" class="btn btn-success" >Login</a>
         {% endif %}
     </nav>
+    
+
     <div class="d-flex justify-content-center">
-        <div class="containter">
+        <div class="containter mt-4">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    <div class="alert alert-danger text-center" role="alert">
+                        {% for message in messages %}
+                        {{ message }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                {% endwith %}
+            
             {%block content%}{%endblock%}
         </div>
     </div>

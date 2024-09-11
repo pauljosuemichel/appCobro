@@ -13,6 +13,8 @@ class Usuario(UserMixin, db.Model):
     vencimiento_tarjeta = db.Column(db.DateTime)
     numero_seguridad_tarjeta = db.Column(db.Integer)
 
+    plata = db.Column(db.Integer, default=100000)
+
     carritos = db.relationship('Carrito', backref='usuario', lazy='dynamic')
 
     def __repr__(self):

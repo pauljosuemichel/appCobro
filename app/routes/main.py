@@ -98,11 +98,56 @@ def agregarCarrito(product_id):
 
     return jsonify({'status': 'success', 'message': f'{producto.nombre} ha sido añadido al carrito.'})
 
-@main_bp.route('/comprar/<int:cart_id>', methods=['POST'])
+@main_bp.route('/comprar/<int:carrito_id>', methods=['GET'])
 @login_required
-def compra(cart_id):
-    #Mucho codigo ...
-    return render_template("carrito.html", carritos=carritos)
+def compra(carrito_id):
+    # Obtener el carrito por su ID
+    carrito = Carrito.query.get_or_404(carrito_id)
+
+    # Verificar si el carrito pertenece al usuario actual y si no está ya comprado
+    if carrito.usuario_id != current_user.id or carrito.comprado:
+        flash('Acción no permitida o el carrito ya ha sido comprado.', 'danger')
+        return redirect(url_for('carrito'))
+    
+    # Verificar si la tarjeta está vencida
+    if current_user.vencimiento_tarjeta < datetime.now():
+        flash('La tarjeta está vencida. Actualice los datos de pago.', 'danger')
+        return redirect(url_for('view_cart'))
+    
+    # Calcular el total de la compra
+    carrito_productos = CarritoProducto.query.filter_by(carrito_id=carrito_id).all()
+    total_compra = 0
+    for item in carrito_productos:
+        # Obtener el producto correspondiente
+        producto = Producto.query.get(item.producto_id)
+
+        # Verificar si hay suficiente stock
+        if producto.stock >= item.cantidad:
+            # Restar la cantidad del stock del producto
+            producto.stock -= item.cantidad
+            # Calcular el subtotal del producto
+            subtotal = producto.precio * item.cantidad
+            total_compra += subtotal
+        else:
+            flash(f"No hay suficiente stock para {producto.nombre}.", 'danger')
+            return redirect(url_for('view_cart'))
+
+    # Verificar si el usuario tiene saldo suficiente en la tarjeta
+    if current_user.saldo_tarjeta < total_compra:
+        flash('No tiene suficiente saldo en la tarjeta.', 'danger')
+        return redirect(url_for('view_cart'))
+
+    # Restar el total de la compra del saldo de la tarjeta
+    current_user.saldo_tarjeta -= total_compra
+
+    # Marcar el carrito como comprado
+    carrito.comprado = True
+
+    # Confirmar los cambios en la base de datos
+    db.session.commit()
+
+    # Redirigir a la página de comprobante de transacción
+    return redirect(url_for('comprobante_transaccion', carrito_id=carrito_id))
 
 @main_bp.route('/contacto')
 def contacto():

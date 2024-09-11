@@ -98,5 +98,14 @@ def create_app():
         users = Usuario.query.all()
         for user in users:
             click.echo(f"{user}: {"admin" if user.is_admin else "guest"}")
+
+    @app.cli.command("agregar_plata")
+    @click.argument("name")
+    @click.argument("cant")
+    def agregar_plata(name, cant):
+        user = Usuario.query.filter_by(name=name).first()
+        plata += int(cant)
+        db.session.commit()
+        click.echo(f"User {name} added ${cant}")
     
     return app
