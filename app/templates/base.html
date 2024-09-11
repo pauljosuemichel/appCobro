@@ -47,27 +47,39 @@
         color: white;
         text-align: center;
         padding: 10px 0;
-        position: fixed;
         width: 100%;
-        bottom: 0;
     }
     </style>
 </head>
 <body>
-    <nav>
-        <a href="{{ url_for('main.home') }}">Inicio</a>
-        <a href="{{ url_for('main.carrito') }}">Carrito</a>
-        <a href="{{ url_for('main.contacto') }}">Contacto</a>
-
-        <a href="{{ url_for('admin.crearProducto') }}">
-            Añadir Productos
-        </a>
-
-        {% if current_user.is_authenticated %}
-        <a href="{{ url_for('login.logout') }}" class="btn btn-danger">Cerrar Sesion</a>
-        {% else %}
-        <a href="{{ url_for('login.login') }}" class="btn btn-success" >Login</a>
-        {% endif %}
+    <nav class="d-flex justify-content-evenly">
+        <h2 class="text-info">
+            {% if current_user.is_authenticated %}
+            <i class="fa-regular fa-user me-2"></i>
+            {% endif %}
+            {{current_user.name}}
+        </h2>
+        <div>
+            <a href="{{ url_for('main.home') }}">Inicio</a>
+            <a href="{{ url_for('main.carrito') }}">Carrito</a>
+            <a href="{{ url_for('main.tusCompras') }}">Tus Compras</a>
+            <a href="{{ url_for('main.contacto') }}">Contacto</a>
+            
+            <a href="{{ url_for('admin.crearProducto') }}">
+                Añadir Productos
+            </a>
+    
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('login.logout') }}" class="btn btn-danger">Cerrar Sesion</a>
+            {% else %}
+            <a href="{{ url_for('login.login') }}" class="btn btn-success" >Login</a>
+            {% endif %}
+        </div>
+        <h2 class="text-info">
+            {% if current_user.is_authenticated %}
+            ${{current_user.plata|price_format}}
+            {% endif %}
+        </h2>
     </nav>
     
 

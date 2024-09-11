@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Compra realizada con exito!!!</h1>
+<div>
+    <h2>Por el usuario {{current_user.name}} con numero de tajeta terminado en ..{{ (current_user.numero_tarjeta|string)[-3:]}}</h2>
+    <h2>Se han restado ${{costo|price_format}} de su cuenta</h2>
+</div>
+{% endblock %}
+
+{% block css %}
+<style>
+</style>
+{% endblock %}

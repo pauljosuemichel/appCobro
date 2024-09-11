@@ -79,10 +79,10 @@ def create_app():
 
     @app.cli.command("remove_user")
     @click.argument("name")
-    def create_user(name):
+    def remove_user(name):
         user = Usuario.query.filter_by(name=name).first()
         db.session.delete(user)
-        db.session.commit
+        db.session.commit()
         click.echo(f"User {name} removed successfully")
 
     @app.cli.command("make_admin")
@@ -97,14 +97,14 @@ def create_app():
     def list_users():
         users = Usuario.query.all()
         for user in users:
-            click.echo(f"{user}: {"admin" if user.is_admin else "guest"}")
+            click.echo(f"{user}: {"admin" if user.is_admin else "guest"}, {user.plata}")
 
     @app.cli.command("agregar_plata")
     @click.argument("name")
     @click.argument("cant")
     def agregar_plata(name, cant):
         user = Usuario.query.filter_by(name=name).first()
-        plata += int(cant)
+        user.plata += int(cant)
         db.session.commit()
         click.echo(f"User {name} added ${cant}")
     

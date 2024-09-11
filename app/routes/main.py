@@ -3,7 +3,7 @@ from flask_login import login_required, login_user, logout_user, current_user
 from datetime import datetime, timezone
 from app import bcrypt, db
 from app.models import Usuario, Carrito, Producto, CarritoProducto
-from app.forms import LoginForm, RegisterForm
+from app.forms import LoginForm, RegisterForm, TarjetaForm
 
 main_bp = Blueprint('main', __name__, template_folder='templates')
 
@@ -41,7 +41,39 @@ def carrito():
             'total': producto.precio * carrito_producto.cantidad
         })
 
-    return render_template('carrito.html', items=items)
+    return render_template('carrito.html', items=items, carrito_id=carrito.id)
+
+@main_bp.route('/tusCompras')
+@login_required
+def tusCompras():
+    carritos = Carrito.query.filter_by(usuario_id=current_user.id, comprado=True)
+
+    if not carritos:
+        return render_template('carrito.html', items=[])
+    
+    
+    carritosProductos = []
+    # Recuperar todos los productos en el carrito
+    for carrito in carritos:
+        productos = (
+            db.session.query(Producto, CarritoProducto)
+            .join(CarritoProducto, Producto.id == CarritoProducto.producto_id)
+            .filter(CarritoProducto.carrito_id == carrito.id)
+            .all()
+        )
+        # Crear una lista de diccionarios para los datos del carrito
+        items = []
+        for producto, carrito_producto in productos:
+            items.append({
+                'id': producto.id,
+                'nombre': producto.nombre,
+                'precio': producto.precio,
+                'cantidad': carrito_producto.cantidad,
+                'total': producto.precio * carrito_producto.cantidad
+            })
+        carritosProductos.append(items)
+
+    return render_template('tusCompras.html', carritosProductos=carritosProductos)
 
 @main_bp.route('/modificarCarrito/<int:product_id>/<action>', methods=['POST'])
 @login_required
@@ -98,6 +130,7 @@ def agregarCarrito(product_id):
 
     return jsonify({'status': 'success', 'message': f'{producto.nombre} ha sido añadido al carrito.'})
 
+
 @main_bp.route('/comprar/<int:carrito_id>', methods=['GET'])
 @login_required
 def compra(carrito_id):
@@ -107,12 +140,17 @@ def compra(carrito_id):
     # Verificar si el carrito pertenece al usuario actual y si no está ya comprado
     if carrito.usuario_id != current_user.id or carrito.comprado:
         flash('Acción no permitida o el carrito ya ha sido comprado.', 'danger')
-        return redirect(url_for('carrito'))
+        return redirect(url_for('main.carrito'))
     
+    # Verificar si el usuario tiene los datos de la tarjeta completos
+    if not current_user.numero_tarjeta or not current_user.vencimiento_tarjeta or not current_user.numero_seguridad_tarjeta:
+        flash('Por favor, complete los datos de su tarjeta para realizar la compra.', 'warning')
+        return redirect(url_for('main.completar_datos_tarjeta'))
+
     # Verificar si la tarjeta está vencida
     if current_user.vencimiento_tarjeta < datetime.now():
         flash('La tarjeta está vencida. Actualice los datos de pago.', 'danger')
-        return redirect(url_for('view_cart'))
+        return redirect(url_for('main.carrito'))
     
     # Calcular el total de la compra
     carrito_productos = CarritoProducto.query.filter_by(carrito_id=carrito_id).all()
@@ -130,15 +168,15 @@ def compra(carrito_id):
             total_compra += subtotal
         else:
             flash(f"No hay suficiente stock para {producto.nombre}.", 'danger')
-            return redirect(url_for('view_cart'))
+            return redirect(url_for('main.carrito'))
 
     # Verificar si el usuario tiene saldo suficiente en la tarjeta
-    if current_user.saldo_tarjeta < total_compra:
+    if current_user.plata < total_compra:
         flash('No tiene suficiente saldo en la tarjeta.', 'danger')
-        return redirect(url_for('view_cart'))
+        return redirect(url_for('main.carrito'))
 
     # Restar el total de la compra del saldo de la tarjeta
-    current_user.saldo_tarjeta -= total_compra
+    current_user.plata -= total_compra
 
     # Marcar el carrito como comprado
     carrito.comprado = True
@@ -147,7 +185,31 @@ def compra(carrito_id):
     db.session.commit()
 
     # Redirigir a la página de comprobante de transacción
-    return redirect(url_for('comprobante_transaccion', carrito_id=carrito_id))
+    return redirect(url_for('main.comprobante_transaccion', carrito_id=carrito_id, costo=total_compra))
+
+@main_bp.route('/comprobante/<int:carrito_id>/<int:costo>', methods=['GET'])
+@login_required
+def comprobante_transaccion(carrito_id, costo):
+    return render_template('comprobante_transaccion.html',costo=costo)
+
+@main_bp.route('/completar_tarjeta', methods=['GET', 'POST'])
+@login_required
+def completar_datos_tarjeta():
+    form = TarjetaForm()
+
+    if form.validate_on_submit():
+        # Guardar los datos de la tarjeta en el usuario actual
+        current_user.numero_tarjeta = form.numero_tarjeta.data
+        current_user.vencimiento_tarjeta = form.vencimiento_tarjeta.data
+        current_user.numero_seguridad_tarjeta = form.numero_seguridad_tarjeta.data
+
+        # Confirmar los cambios en la base de datos
+        db.session.commit()
+
+        flash('Datos de la tarjeta guardados correctamente.', 'success')
+        return redirect(url_for('main.carrito'))
+
+    return render_template('completar_datos_tarjeta.html', form=form)
 
 @main_bp.route('/contacto')
 def contacto():

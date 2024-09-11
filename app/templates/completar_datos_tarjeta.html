@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Completar Datos de Tarjeta</h1>
+    
+<form method="POST" action="">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+    {{ form.numero_tarjeta.label(class="form-label") }}
+    {{ form.numero_tarjeta(class="form-control") }}
+    </div>
+    <div class="mb-3">
+    {{ form.vencimiento_tarjeta.label(class="form-label") }}
+    {{ form.vencimiento_tarjeta(class="form-control") }}
+    </div>
+    <div class="mb-3">
+    {{ form.numero_seguridad_tarjeta.label(class="form-label") }}
+    {{ form.numero_seguridad_tarjeta(class="form-control") }}
+    </div>
+    <div class="mb-3">
+    {{ form.submit(class="btn btn-primary") }}
+    </div>
+</form>
+{% endblock %}
+
+{% block css %}
+<style>
+</style>
+{% endblock %}
