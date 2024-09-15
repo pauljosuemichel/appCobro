@@ -24,8 +24,7 @@ def admin_required(func):
 @login_required
 @admin_required
 def crearProducto():
-    nombre_productos = Producto.query.with_entities(Producto.nombre).all()
-    nombre_productos = [name for (name,) in nombre_productos]
+    productos = Producto.query.with_entities(Producto.id,Producto.nombre).all()
     form = ProductoForm()
 
     if form.validate_on_submit():
@@ -44,10 +43,10 @@ def crearProducto():
         db.session.add(producto)
         db.session.commit()
         flash('Product added successfully!', 'success')
-        return redirect(url_for('admin.panel'))
-    return render_template('admin/añadirProducto.html', form=form, nombre_productos=nombre_productos)
+        return redirect(url_for('admin.crearProducto'))
+    return render_template('admin/añadirProducto.html', form=form, productos=productos)
 
-@admin_bp.route('/eliminarProducto/<id>', methods=['POST'])
+@admin_bp.route('/eliminarProducto/<id>', methods=['GET'])
 @login_required
 @admin_required
 def eliminarProducto(id):
@@ -57,4 +56,4 @@ def eliminarProducto(id):
     flash('Product has been deleted.', 'success')
 
     #Aca hay que devolver algo
-    return render_template('admin/añadirProducto.html')
+    return redirect(url_for('admin.crearProducto'))

@@ -20,7 +20,10 @@
                         </div>
                         <div class="d-flex justify-content-between align-items-end">
                             <p class="card-text mb-0"><strong>Stock:</strong> {{ producto.stock }}</p>
-                            <form class="agregarCarritoForm" data-route="{{ url_for('main.agregarCarrito', product_id=producto.id) }}">
+                            <form class="agregarCarritoForm d-flex align-items-end" data-route="{{ url_for('main.agregarCarrito', product_id=producto.id) }}">
+                                <div class="spinner-border text-primary me-2 d-none" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
                                 <button type="submit" class="btn btn-primary btn-sm">
                                     <i class="fa-solid fa-cart-shopping"></i> Agregar al Carrito
                                 </button>
@@ -62,13 +65,18 @@
 
 {% block js %}
 <script>
-    document.querySelectorAll('.agregarCarritoForm').forEach(form => {
+    const forms = document.querySelectorAll('.agregarCarritoForm')
+    forms.forEach(form => {
         form.addEventListener('submit', function(event) {
           event.preventDefault(); // Evita el envío tradicional del formulario
+
+          const spiner = form.querySelector(".spinner-border")
+          spiner.classList.remove("d-none");
   
           fetch(this.getAttribute('data-route'), {method: 'POST'})
           .then(response => response.json())
           .then(data => {
+            spiner.classList.add("d-none");
             if (data.status === 'success') {
               alert(data.message);
               // Aquí puedes actualizar la interfaz de usuario si es necesario

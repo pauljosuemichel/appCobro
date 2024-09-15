@@ -48,9 +48,9 @@
 </div>
 <h2 class="mt-5 text-center">Eliminar productos</h2>
 <div class="d-flex justify-content-center">
-    {% for nombre in nombre_productos %}
+    {% for id, nombre in productos %}
     <div class="border rounded p-1 ps-2 producto m-2">
-        <a href="" class="btn btn-outline-danger btn-sm me-2">
+        <a href="{{url_for('admin.eliminarProducto', id=id)}}" class="btn btn-outline-danger btn-sm me-2">
             <i class="fas fa-trash"></i>
         </a>
         <p class="me-2">{{ nombre }}</p>
