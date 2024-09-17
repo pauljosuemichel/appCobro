@@ -223,19 +223,25 @@ def contacto():
     return render_template("contacto.html")
 
 
-@main_bp.route('/checkout/<int:carrito_id>', methods=['GET'])
+@main_bp.route('/checkout/<int:carrito_id>', methods=['POST'])
 def checkout(carrito_id):
     carrito = Carrito.query.get_or_404(carrito_id)
     if carrito.comprado:
         return "Carrito ya comprado", 400
 
+    if not carrito or not carrito.productos:
+        return "No hay productos en el carrito.", 400
+
+
+
     items = []
     total_amount = 0
-
-    for producto in carrito.productos:
+    carrito_producto = CarritoProducto.query.filter_by(carrito_id=carrito_id).all()
+    for cart_product in carrito_producto:
+        producto = Producto.query.get(cart_product.producto_id)
         items.append({
             "title": producto.nombre,
-            "quantity": 1,
+            "quantity": cart_product.cantidad,
             "unit_price": producto.precio,
             "currency_id": "ARS"
         })
@@ -253,15 +259,15 @@ def checkout(carrito_id):
     }
 
     preference_response = mp.preference().create(preference_data)
-    # preference_id = preference_response['response']['id']
-    init_point = preference_response['response']['init_point']
+    preference_id = preference_response['response']['id']
+    #init_point = preference_response['response']['init_point']
 
     # Guarda la transacción pendiente en la base de datos
     transaccion = Transaccion(carrito_id=carrito_id, monto=total_amount, estado="pendiente")
     db.session.add(transaccion)
     db.session.commit()
 
-    return redirect(init_point)
+    return jsonify({"preference_id": preference_id})
 
 @main_bp.route('/success')
 def success():
