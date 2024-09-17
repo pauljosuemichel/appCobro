@@ -1,11 +1,17 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for, jsonify
-from flask_login import login_required, login_user, logout_user, current_user
+from flask_login import login_required, current_user
 from datetime import datetime, timezone
-from app import bcrypt, db
-from app.models import Usuario, Carrito, Producto, CarritoProducto
-from app.forms import LoginForm, RegisterForm, TarjetaForm
+from app import db
+from app.models import Carrito, Producto, CarritoProducto, Transaccion
+from app.forms import TarjetaForm
+import mercadopago
+import os
+
 
 main_bp = Blueprint('main', __name__, template_folder='templates')
+
+# Configura tu ACCESS_TOKEN
+mp = mercadopago.SDK(os.getenv('MERCADO_PAGO_TOKEN'))
 
 
 @main_bp.route('/')
@@ -215,3 +221,71 @@ def completar_datos_tarjeta():
 def contacto():
     #Mucho codigo ...
     return render_template("contacto.html")
+
+
+@main_bp.route('/checkout/<int:carrito_id>', methods=['GET'])
+def checkout(carrito_id):
+    carrito = Carrito.query.get_or_404(carrito_id)
+    if carrito.comprado:
+        return "Carrito ya comprado", 400
+
+    items = []
+    total_amount = 0
+
+    for producto in carrito.productos:
+        items.append({
+            "title": producto.nombre,
+            "quantity": 1,
+            "unit_price": producto.precio,
+            "currency_id": "ARS"
+        })
+        total_amount += producto.precio
+
+    preference_data = {
+        "items": items,
+        "back_urls": {
+            "success": url_for('main.success', _external=True),
+            "failure": url_for('main.failure', _external=True),
+            "pending": url_for('main.pending', _external=True)
+        },
+        "auto_return": "approved",
+        "notification_url": url_for('main.notifications', _external=True)
+    }
+
+    preference_response = mp.preference().create(preference_data)
+    # preference_id = preference_response['response']['id']
+    init_point = preference_response['response']['init_point']
+
+    # Guarda la transacción pendiente en la base de datos
+    transaccion = Transaccion(carrito_id=carrito_id, monto=total_amount, estado="pendiente")
+    db.session.add(transaccion)
+    db.session.commit()
+
+    return redirect(init_point)
+
+@main_bp.route('/success')
+def success():
+    return "Compra realizada con éxito!"
+
+@main_bp.route('/failure')
+def failure():
+    return "La compra falló."
+
+@main_bp.route('/pending')
+def pending():
+    return "La compra está pendiente."
+
+@main_bp.route('/notifications', methods=['POST'])
+def notifications():
+    data = request.json
+    # Aquí procesas la notificación recibida
+    # Extrae los datos relevantes del webhook de Mercado Pago
+    transaction_id = data.get('id')
+    estado = data.get('status')
+
+    transaccion = Transaccion.query.filter_by(id=transaction_id).first()
+    if transaccion:
+        transaccion.estado = estado
+        db.session.commit()
+
+    return jsonify({'status': 'ok'}), 200

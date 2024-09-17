@@ -1,6 +1,7 @@
 from datetime import datetime
 from . import db
 from flask_login import UserMixin
+from datetime import datetime, timezone
 
 class Usuario(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -55,3 +56,13 @@ class Producto(db.Model):
         return f"<Producto {self.nombre}>"
 
 
+class Transaccion(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    carrito_id = db.Column(db.Integer, db.ForeignKey('carrito.id'))
+    carrito = db.relationship('Carrito', backref='transacciones')
+    fecha = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    monto = db.Column(db.Integer, nullable=False)
+    estado = db.Column(db.String(20), nullable=False)  # Ej. "aprobado", "fallido", "pendiente"
+
+    def __repr__(self):
+        return f"<Transaccion {self.id} - {self.estado}>"
